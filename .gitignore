@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+
+# Downloaded corpus (re-fetch via src/data_pipeline.py)
+data/shakespeare.txt
+
+# Reports and LaTeX outputs (local only)
+results/
+
+# Draft PDFs at repo root
+/*.pdf
+
+# Local agent settings
+.claude/
