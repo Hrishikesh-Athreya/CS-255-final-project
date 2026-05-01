@@ -12,15 +12,18 @@ build/
 
 # OS / editor
 .DS_Store
+.idea/
 
-# Downloaded corpus (re-fetch via src/data_pipeline.py)
-data/shakespeare.txt
+# Datasets and downloaded corpora (re-fetch via src/data_pipeline.py)
+data/
 
-# Reports and LaTeX outputs (local only)
+# Reports, presentations, generated artifacts (local only)
 results/
+*.pptx
+*.pdf
 
-# Draft PDFs at repo root
-/*.pdf
+# Local notes / drafts
+presentation_speaker_notes.md
 
 # Local agent settings
 .claude/

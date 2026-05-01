@@ -83,14 +83,14 @@ if __name__ == "__main__":
     demo_cms(shakespeare, "Shakespeare (Complete Works)")
     demo_cms(zipf, "Synthetic Zipf (n=100k, α=1.5, card=5k)")
 
-    section("CMS ε/δ PARAMETER IMPACT")
-    print(f"\n  {'ε':<8} {'δ':<8} {'Width':>8} {'Depth':>5} {'Cells':>10}")
-    print(f"  {'-'*8} {'-'*8} {'-'*8} {'-'*5} {'-'*10}")
-    for eps in [0.1, 0.01, 0.001]:
-        for delta in [0.1, 0.05, 0.01]:
-            c = CountMinSketch(epsilon=eps, delta=delta)
-            d = c.get_dimensions()
-            print(f"  {eps:<8} {delta:<8} {d['width']:>8,} {d['depth']:>5} {d['memory_cells']:>10,}")
+    # section("CMS ε/δ PARAMETER IMPACT")
+    # print(f"\n  {'ε':<8} {'δ':<8} {'Width':>8} {'Depth':>5} {'Cells':>10}")
+    # print(f"  {'-'*8} {'-'*8} {'-'*8} {'-'*5} {'-'*10}")
+    # for eps in [0.1, 0.01, 0.001]:
+    #     for delta in [0.1, 0.05, 0.01]:
+    #         c = CountMinSketch(epsilon=eps, delta=delta)
+    #         d = c.get_dimensions()
+    #         print(f"  {eps:<8} {delta:<8} {d['width']:>8,} {d['depth']:>5} {d['memory_cells']:>10,}")
 
     print(f"\n{'='*60}")
     print("  Phase 1 demo complete.")
