@@ -21,6 +21,11 @@ from src.hyperloglog import HyperLogLog
 
 
 def run(n: int, cardinality: int, n_seeds: int, num_hashes: int, num_groups: int, p: int) -> dict:
+    """Run FM and HLL on ``n_seeds`` independent uniform streams; collect estimates and truths.
+
+    Returns:
+        Dict with keys ``truth_mean``, ``fm_estimates``, ``hll_estimates``, ``n_seeds``.
+    """
     fm_estimates: list[float] = []
     hll_estimates: list[float] = []
     truths: list[int] = []
@@ -47,6 +52,7 @@ def run(n: int, cardinality: int, n_seeds: int, num_hashes: int, num_groups: int
 
 
 def summarize(label: str, ests: list[float], truth: float) -> dict:
+    """Aggregate mean, spread, and relative error statistics for one algorithm's estimates."""
     rel_errs = [abs(e - truth) / truth for e in ests]
     return {
         "algorithm": label,
@@ -61,6 +67,7 @@ def summarize(label: str, ests: list[float], truth: float) -> dict:
 
 
 def plot_distribution(fm: list[float], hll: list[float], truth: float) -> Path:
+    """Overlay histograms of FM vs HLL estimates with a vertical line at exact cardinality."""
     fig, ax = plt.subplots(figsize=(9, 5))
     bins = 30
     ax.hist(fm, bins=bins, alpha=0.55, label="Flajolet–Martin")
@@ -74,7 +81,8 @@ def plot_distribution(fm: list[float], hll: list[float], truth: float) -> Path:
     return save_plot(fig, "fm_vs_hll_distribution.png")
 
 
-def main():
+def main() -> None:
+    """CLI entry: parse args, run variance study, write CSV and PNG under ``RESULTS_DIR``."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=100_000)
     ap.add_argument("--cardinality", type=int, default=10_000)

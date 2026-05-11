@@ -12,20 +12,32 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Repository root for subprocess ``cwd``.
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def run(module: str, args: list[str]) -> int:
+    """Execute ``python -m module`` with extra CLI arguments; stream output to this process.
+
+    Args:
+        module: Dotted module path (e.g. ``experiments.hll_precision_sweep``).
+        args: Additional argv tokens after the module name.
+
+    Returns:
+        Subprocess exit code (0 success).
+    """
     cmd = [sys.executable, "-m", module, *args]
     print(f"\n$ {' '.join(cmd)}", flush=True)
     return subprocess.call(cmd, cwd=ROOT)
 
 
-def main():
+def main() -> int:
+    """Parse flags, choose stream sizes and seed counts, run each experiment module in order."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true", help="Run with smaller streams and fewer seeds")
     args = ap.parse_args()
 
+    # Stream length ``n`` and repetition counts depend on quick vs full profile.
     if args.quick:
         n = "20000"
         seeds_hll = "3"

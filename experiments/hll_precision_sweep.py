@@ -19,6 +19,11 @@ from src.hyperloglog import HyperLogLog
 
 
 def run(p_values: list[int], n: int, cardinality: int, seeds: list[int]) -> list[dict]:
+    """For each precision ``p``, average relative HLL error over ``seeds`` uniform streams.
+
+    Returns:
+        One result dict per ``p`` (mean/std error, theoretical 1.04/√m, metadata).
+    """
     rows: list[dict] = []
     for p in p_values:
         m = 1 << p
@@ -52,6 +57,7 @@ def run(p_values: list[int], n: int, cardinality: int, seeds: list[int]) -> list
 
 
 def plot_error_vs_p(rows: list[dict]) -> Path:
+    """Plot empirical mean ± std relative error vs ``p`` with theoretical curve."""
     fig, ax = plt.subplots(figsize=(8, 5))
     ps = [r["p"] for r in rows]
     means = [r["mean_rel_error"] * 100 for r in rows]
@@ -69,6 +75,7 @@ def plot_error_vs_p(rows: list[dict]) -> Path:
 
 
 def plot_error_vs_memory(rows: list[dict]) -> Path:
+    """Plot mean relative error vs register count ``m`` (log–log tradeoff view)."""
     fig, ax = plt.subplots(figsize=(8, 5))
     mems = [r["memory_bytes_estimate"] for r in rows]
     means = [r["mean_rel_error"] * 100 for r in rows]
@@ -82,7 +89,8 @@ def plot_error_vs_memory(rows: list[dict]) -> Path:
     return save_plot(fig, "hll_error_vs_memory.png")
 
 
-def main():
+def main() -> None:
+    """CLI entry: sweep ``p``, write CSV and two PNGs."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--p-min", type=int, default=4)
     ap.add_argument("--p-max", type=int, default=14)

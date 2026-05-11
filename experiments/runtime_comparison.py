@@ -18,19 +18,22 @@ from src.flajolet_martin import FlajoletMartin
 from src.hyperloglog import HyperLogLog
 
 
-def time_exact_distinct(stream):
+def time_exact_distinct(stream: list[str]) -> dict:
+    """Time and memory for exact distinct count on ``stream``."""
     with measure("exact_distinct") as m:
         exact_distinct_count(stream)
     return m
 
 
-def time_exact_freq(stream):
+def time_exact_freq(stream: list[str]) -> dict:
+    """Time and memory for building exact frequency table on ``stream``."""
     with measure("exact_freq") as m:
         exact_frequencies(stream)
     return m
 
 
-def time_fm(stream, hashes, groups):
+def time_fm(stream: list[str], hashes: int, groups: int) -> dict:
+    """Time and memory for Flajolet–Martin ingest + final estimate."""
     with measure("fm") as m:
         fm = FlajoletMartin(num_hashes=hashes, num_groups=groups)
         fm.process_stream(stream)
@@ -38,7 +41,8 @@ def time_fm(stream, hashes, groups):
     return m
 
 
-def time_hll(stream, p):
+def time_hll(stream: list[str], p: int) -> dict:
+    """Time and memory for HyperLogLog ingest + final estimate."""
     with measure("hll") as m:
         hll = HyperLogLog(p=p)
         hll.process_stream(stream)
@@ -46,7 +50,8 @@ def time_hll(stream, p):
     return m
 
 
-def time_cms(stream, eps, delta):
+def time_cms(stream: list[str], eps: float, delta: float) -> dict:
+    """Time and memory for Count–Min Sketch ingest (no per-query phase)."""
     with measure("cms") as m:
         cms = CountMinSketch(epsilon=eps, delta=delta)
         cms.process_stream(stream)
@@ -54,6 +59,7 @@ def time_cms(stream, eps, delta):
 
 
 def run_dataset(name: str, n: int, fm_hashes: int, fm_groups: int, hll_p: int, eps: float, delta: float) -> list[dict]:
+    """Load dataset ``name`` and append one metrics row per algorithm."""
     info(f"loading dataset: {name} (n={n})")
     stream = get_dataset(name, n=n)
     info(f"  stream length = {len(stream):,}")
@@ -80,13 +86,14 @@ def run_dataset(name: str, n: int, fm_hashes: int, fm_groups: int, hll_p: int, e
 
 
 def plot_bars(rows: list[dict], metric: str, title: str, ylabel: str, name: str) -> Path:
+    """Grouped bar chart: datasets on X, one bar series per algorithm; ``metric`` is CSV column key."""
     datasets = sorted({r["dataset"] for r in rows})
     algs = ["exact_distinct", "exact_freq", "flajolet_martin", "hyperloglog", "count_min_sketch"]
     fig, ax = plt.subplots(figsize=(10, 5))
-    bar_w = 0.15
+    bar_w = 0.15  # horizontal offset step between algorithm series within each dataset group
     for i, alg in enumerate(algs):
-        xs = []
-        ys = []
+        xs: list[float] = []  # bar center x positions
+        ys: list[float] = []  # bar heights (``metric`` column)
         for j, ds in enumerate(datasets):
             for r in rows:
                 if r["dataset"] == ds and r["algorithm"] == alg:
@@ -104,7 +111,8 @@ def plot_bars(rows: list[dict], metric: str, title: str, ylabel: str, name: str)
     return save_plot(fig, name)
 
 
-def main():
+def main() -> None:
+    """CLI entry: benchmark all algorithms on selected datasets; write CSV and two bar charts."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--datasets", nargs="+", default=["uniform", "zipf", "shakespeare"])
     ap.add_argument("--n", type=int, default=100_000)

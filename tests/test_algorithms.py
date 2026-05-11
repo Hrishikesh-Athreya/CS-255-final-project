@@ -1,4 +1,7 @@
+"""Unit tests for data generation, exact baselines, and sketch implementations."""
+
 import unittest
+
 from src.data_pipeline import generate_uniform_stream, generate_zipf_stream, tokenize
 from src.exact_counters import exact_distinct_count, exact_frequencies, exact_heavy_hitters
 from src.flajolet_martin import FlajoletMartin
@@ -7,6 +10,7 @@ from src.count_min_sketch import CountMinSketch
 
 
 class TestDataPipeline(unittest.TestCase):
+    """Tests for ``tokenize`` and synthetic stream generators."""
 
     def test_tokenize_basic(self):
         tokens = tokenize("Hello, World! This is a TEST.")
@@ -32,6 +36,7 @@ class TestDataPipeline(unittest.TestCase):
 
 
 class TestExactCounters(unittest.TestCase):
+    """Tests for exact distinct count, frequencies, and heavy-hitters helpers."""
 
     def test_distinct_count(self):
         stream = ["a", "b", "c", "a", "b", "a"]
@@ -51,6 +56,7 @@ class TestExactCounters(unittest.TestCase):
 
 
 class TestFlajoletMartin(unittest.TestCase):
+    """Sanity checks for FM cardinality estimates and constructor validation."""
 
     def test_small_known_input(self):
         stream = [f"item_{i}" for i in range(100)]
@@ -74,6 +80,7 @@ class TestFlajoletMartin(unittest.TestCase):
 
 
 class TestHyperLogLog(unittest.TestCase):
+    """Sanity checks for HLL estimates and precision bounds."""
 
     def test_small_known_input(self):
         stream = [f"item_{i}" for i in range(1000)]
@@ -100,6 +107,7 @@ class TestHyperLogLog(unittest.TestCase):
 
 
 class TestCountMinSketch(unittest.TestCase):
+    """Tests for CMS frequency estimates, heavy hitters, and table dimensions."""
 
     def test_frequency_estimate(self):
         stream = ["a"] * 100 + ["b"] * 50 + ["c"] * 10

@@ -20,14 +20,19 @@ from src.exact_counters import exact_frequencies, exact_heavy_hitters
 
 
 def evaluate(stream: list[str], epsilon: float, delta: float, threshold: float) -> dict:
+    """Run CMS on ``stream``; compare to exact frequencies and heavy-hitters baseline.
+
+    Returns:
+        Metrics including max overcount, εN bound check, and heavy-hitter recall/precision.
+    """
     cms = CountMinSketch(epsilon=epsilon, delta=delta)
     cms.process_stream(stream)
     dims = cms.get_dimensions()
-    N = len(stream)
+    N = len(stream)  # stream length; ε·N is the CMS worst-case overcount bound scale
 
     truths = exact_frequencies(stream)
-    overcounts = []
-    rel_overs = []
+    overcounts: list[int] = []  # per-item (estimate − true), nonnegative for CMS
+    rel_overs: list[float] = []  # overcount / N for each distinct item
     for item, truth in truths.items():
         est = cms.estimate(item)
         over = est - truth
@@ -39,7 +44,7 @@ def evaluate(stream: list[str], epsilon: float, delta: float, threshold: float) 
 
     truth_hh = set(exact_heavy_hitters(stream, threshold).keys())
     cms_hh = set(cms.heavy_hitters(stream, threshold).keys())
-    tp = len(truth_hh & cms_hh)
+    tp = len(truth_hh & cms_hh)  # true positives in heavy-hitter ID sets
     recall = tp / len(truth_hh) if truth_hh else float("nan")
     precision = tp / len(cms_hh) if cms_hh else float("nan")
 
@@ -65,6 +70,7 @@ def evaluate(stream: list[str], epsilon: float, delta: float, threshold: float) 
 
 
 def aggregate(runs: list[dict]) -> dict:
+    """Average numeric fields across random seeds; replace per-run ``bound_holds`` with rate."""
     keys = runs[0].copy()
     keys["max_overcount_fraction"] = statistics.fmean(r["max_overcount_fraction"] for r in runs)
     keys["max_overcount"] = statistics.fmean(r["max_overcount"] for r in runs)
@@ -77,6 +83,7 @@ def aggregate(runs: list[dict]) -> dict:
 
 
 def plot_overcount(rows: list[dict]) -> Path:
+    """Log–log plot: empirical max(overcount)/N vs ε, dashed y = ε reference."""
     fig, ax = plt.subplots(figsize=(8, 5))
     by_delta: dict[float, list[dict]] = {}
     for r in rows:
@@ -99,6 +106,7 @@ def plot_overcount(rows: list[dict]) -> Path:
 
 
 def plot_recall(rows: list[dict]) -> Path:
+    """Plot heavy-hitter recall and precision vs ε for each δ curve."""
     fig, ax = plt.subplots(figsize=(8, 5))
     by_delta: dict[float, list[dict]] = {}
     for r in rows:
@@ -120,7 +128,8 @@ def plot_recall(rows: list[dict]) -> Path:
     return save_plot(fig, "cms_heavy_hitter_recall.png")
 
 
-def main():
+def main() -> None:
+    """Grid search ε × δ over Zipf streams; write CSV and two figures."""
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=100_000)
     ap.add_argument("--cardinality", type=int, default=5_000)
